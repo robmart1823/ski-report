@@ -114,27 +114,34 @@ async function fetchWeather(resort) {
   return { baseInches, forecast, dates };
 }
 
+// ── CORS proxy list (tried in order) ──────────
+const PROXIES = [
+  url => ({ url: `https://corsproxy.io/?${encodeURIComponent(url)}`, extract: r => r.text() }),
+  url => ({ url: `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`, extract: async r => { const j = await r.json(); if (j.status?.http_code !== 200) throw new Error('bad'); return j.contents ?? ''; } }),
+  url => ({ url: `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`, extract: r => r.text() }),
+];
+
 // ── Resort conditions fetch via CORS proxy ────
 async function fetchResortConditions(resort) {
   if (!resort.conditionsUrl) return { openTrails: null, snowBaseIn: null };
 
-  try {
-    const controller = new AbortController();
-    const tid = setTimeout(() => controller.abort(), 7000);
-
-    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(resort.conditionsUrl)}`;
-    const res = await fetch(proxyUrl, { signal: controller.signal });
-    clearTimeout(tid);
-
-    if (!res.ok) return { openTrails: null, snowBaseIn: null };
-
-    const json = await res.json();
-    if (json.status?.http_code !== 200) return { openTrails: null, snowBaseIn: null };
-
-    return parseConditions(json.contents ?? '');
-  } catch {
-    return { openTrails: null, snowBaseIn: null };
+  for (const makeProxy of PROXIES) {
+    try {
+      const controller = new AbortController();
+      const tid = setTimeout(() => controller.abort(), 8000);
+      const { url: proxyUrl, extract } = makeProxy(resort.conditionsUrl);
+      const res = await fetch(proxyUrl, { signal: controller.signal });
+      clearTimeout(tid);
+      if (!res.ok) continue;
+      const html = await extract(res);
+      const result = parseConditions(html);
+      // Only return if we got at least one data point
+      if (result.openTrails !== null || result.snowBaseIn !== null) return result;
+    } catch {
+      continue;
+    }
   }
+  return { openTrails: null, snowBaseIn: null };
 }
 
 // ── Parse snow base & open trails from HTML ───
@@ -158,6 +165,11 @@ function parseConditions(html) {
     /trails?\s*open[:\s]+(\d+)/i,
     /(\d+)\s*runs?\s*open/i,
     /(\d+)\s*open\s*trails?/i,
+    /trails?\s*:\s*(\d+)/i,
+    /"openTrails"\s*:\s*(\d+)/i,
+    /"trails_open"\s*:\s*(\d+)/i,
+    /"open"\s*:\s*(\d+)/i,
+    /(\d+)\s*(?:trails?|runs?)\s*(?:are\s*)?(?:currently\s*)?open/i,
   ];
   for (const pat of trailPatterns) {
     const m = text.match(pat);
@@ -171,6 +183,10 @@ function parseConditions(html) {
     /base[:\s–\-]+(\d+)["""]/i,
     /snow\s*(?:base|depth)[:\s–\-]+(\d+)/i,
     /base\s*depth[:\s–\-]+(\d+)/i,
+    /"snowBase"\s*:\s*"?(\d+)/i,
+    /"base_depth"\s*:\s*"?(\d+)/i,
+    /"baseDepth"\s*:\s*"?(\d+)/i,
+    /base\s*(?:condition)?[:\s]+(\d+)['""]?\s*(?:in|inches|")/i,
   ];
   for (const pat of basePatterns) {
     const m = text.match(pat);
@@ -254,8 +270,9 @@ function populateCard(resort, weatherData, conditionsData) {
   const { baseInches, forecast, dates } = weatherData;
   const { openTrails = null, snowBaseIn = null } = conditionsData || {};
 
-  // Use resort-reported base if available, otherwise Open-Meteo model estimate
-  const displayBase = snowBaseIn ?? baseInches;
+  // Use resort-reported base if available.
+  // Only use Open-Meteo snow_depth if > 0 (0 usually means no mountain snow data, not truly 0").
+  const displayBase = snowBaseIn ?? (baseInches > 0 ? baseInches : null);
   card.className = `card ${cardStatus(displayBase)}`;
 
   const baseDisplay = displayBase !== null
