@@ -2,83 +2,104 @@
 //  Indy Pass Northeast Ski Conditions Dashboard
 // ─────────────────────────────────────────────
 
+// RapidAPI key for ski conditions data
+const RAPIDAPI_KEY = '71842f5d36msh09044293d4984efp14ea41jsn5b6307aa7ccb';
+
 const RESORTS = [
   // Vermont
   { name: 'Bolton Valley',    state: 'VT', lat: 44.4186, lon: -72.8722,
+    slug: 'bolton-valley',
     url: 'https://www.boltonvalley.com',
     conditionsUrl: 'https://www.boltonvalley.com/mountain-info/snow-conditions/',
     totalTrails: 71 },
   { name: 'Burke Mountain',   state: 'VT', lat: 44.5895, lon: -71.9007,
+    slug: 'burke-mountain',
     url: 'https://www.skiburke.com',
     conditionsUrl: 'https://www.skiburke.com/mountain-info/conditions/',
     totalTrails: 50 },
   { name: 'Jay Peak',         state: 'VT', lat: 44.9280, lon: -72.5235,
+    slug: 'jay-peak',
     url: 'https://jaypeakresort.com',
     conditionsUrl: 'https://jaypeakresort.com/mountain/conditions/',
     totalTrails: 78 },
   { name: 'Magic Mountain',   state: 'VT', lat: 43.3528, lon: -72.8331,
+    slug: 'magic-mountain',
     url: 'https://www.skimagic.com',
     conditionsUrl: 'https://www.skimagic.com/conditions/',
     totalTrails: 40 },
   { name: 'Saskadena Six',    state: 'VT', lat: 43.9159, lon: -72.5668,
+    slug: 'saskadena-six',
     url: 'https://www.saskadena6.com',
     conditionsUrl: 'https://www.saskadena6.com/',
     totalTrails: 19 },
 
   // New Hampshire
   { name: 'Black Mountain',   state: 'NH', lat: 44.1520, lon: -71.1990,
+    slug: 'black-mountain-nh',
     url: 'https://www.blackmt.com',
     conditionsUrl: 'https://www.blackmt.com/skiing/conditions/',
     totalTrails: 45 },
   { name: 'Cannon Mountain',  state: 'NH', lat: 44.1541, lon: -71.6925,
+    slug: 'cannon-mountain',
     url: 'https://www.cannonmt.com',
     conditionsUrl: 'https://www.cannonmt.com/mountain/snow-conditions/',
     totalTrails: 72 },
   { name: 'Dartmouth Skiway', state: 'NH', lat: 43.8167, lon: -72.0656,
+    slug: 'dartmouth-skiway',
     url: 'https://skiway.dartmouth.edu',
     conditionsUrl: 'https://skiway.dartmouth.edu/conditions/',
     totalTrails: 23 },
   { name: 'Pats Peak',        state: 'NH', lat: 43.1568, lon: -71.7548,
+    slug: 'pats-peak',
     url: 'https://www.patspeak.com',
     conditionsUrl: 'https://www.patspeak.com/mountain/conditions/',
     totalTrails: 28 },
   { name: 'Tenney Mountain',  state: 'NH', lat: 43.8100, lon: -71.8500,
+    slug: 'tenney-mountain',
     url: 'https://www.tenneymtn.com',
     conditionsUrl: 'https://www.tenneymtn.com/mountain/conditions/',
     totalTrails: 50 },
   { name: 'Waterville Valley',state: 'NH', lat: 43.9700, lon: -71.5100,
+    slug: 'waterville-valley',
     url: 'https://www.waterville.com',
     conditionsUrl: 'https://www.waterville.com/mountain-info/trail-conditions/',
     totalTrails: 52 },
 
   // Maine
   { name: 'Big Moose Mountain', state: 'ME', lat: 45.5400, lon: -69.8700,
+    slug: 'big-moose-mountain',
     url: 'https://bigmoosemtn.com',
     conditionsUrl: 'https://bigmoosemtn.com/conditions/',
     totalTrails: 49 },
   { name: 'Big Rock',           state: 'ME', lat: 46.8900, lon: -68.1300,
+    slug: 'big-rock',
     url: 'https://www.bigrockmaine.com',
     conditionsUrl: 'https://www.bigrockmaine.com/conditions/',
     totalTrails: 30 },
   { name: 'Camden Snow Bowl',   state: 'ME', lat: 44.2240, lon: -69.0880,
+    slug: 'camden-snow-bowl',
     url: 'https://camdensnowbowl.com',
     conditionsUrl: 'https://camdensnowbowl.com/ski-conditions/',
     totalTrails: 28 },
   { name: 'Mt. Abram',          state: 'ME', lat: 44.5900, lon: -70.6800,
+    slug: 'mt-abram',
     url: 'https://www.mtabram.com',
     conditionsUrl: 'https://www.mtabram.com/conditions/',
     totalTrails: 44 },
 
   // Massachusetts
   { name: 'Berkshire East',   state: 'MA', lat: 42.5432, lon: -72.9151,
+    slug: 'berkshire-east',
     url: 'https://www.berkshireeast.com',
     conditionsUrl: 'https://www.berkshireeast.com/ski-conditions/',
     totalTrails: 45 },
   { name: 'Bousquet Mountain',state: 'MA', lat: 42.4500, lon: -73.2800,
+    slug: 'bousquet-mountain',
     url: 'https://www.bousquets.com',
     conditionsUrl: 'https://www.bousquets.com/conditions/',
     totalTrails: 23 },
   { name: 'Catamount',        state: 'MA', lat: 42.1273, lon: -73.4440,
+    slug: 'catamount',
     url: 'https://www.catamountski.com',
     conditionsUrl: 'https://www.catamountski.com/conditions/',
     totalTrails: 36 },
@@ -114,6 +135,82 @@ async function fetchWeather(resort) {
   return { baseInches, forecast, dates };
 }
 
+// ── RapidAPI ski conditions fetch ─────────────
+async function fetchRapidAPI(resort) {
+  const headers = {
+    'x-rapidapi-key': RAPIDAPI_KEY,
+  };
+
+  // Try "Ski Resorts and Conditions" API (random-shapes on RapidAPI)
+  try {
+    const host = 'ski-resorts-and-conditions.p.rapidapi.com';
+    const res = await fetch(
+      `https://${host}/v1/resort?slug=${encodeURIComponent(resort.slug)}`,
+      { headers: { ...headers, 'x-rapidapi-host': host } }
+    );
+    if (res.ok) {
+      const json = await res.json();
+      console.log(`[RapidAPI/ski-resorts-and-conditions] ${resort.name}:`, json);
+      const d = json?.data ?? json;
+      const cond = d?.conditions ?? d?.condition ?? d;
+      const openTrails = cond?.openRuns ?? cond?.openTrails ?? cond?.open_trails ?? null;
+      const snowBaseIn = cond?.base ?? cond?.baseDepth ?? cond?.snow_base ?? cond?.snowBase ?? null;
+      if (openTrails !== null || snowBaseIn !== null) {
+        return { openTrails: openTrails ? parseInt(openTrails) : null,
+                 snowBaseIn: snowBaseIn ? parseInt(snowBaseIn) : null };
+      }
+    }
+  } catch (e) {
+    console.warn(`[RapidAPI/ski-resorts-and-conditions] ${resort.name} failed:`, e);
+  }
+
+  // Try "Ski Resort Forecast" API (joeykyber on RapidAPI)
+  try {
+    const host = 'ski-resort-forecast.p.rapidapi.com';
+    const res = await fetch(
+      `https://${host}/${encodeURIComponent(resort.name)}`,
+      { headers: { ...headers, 'x-rapidapi-host': host } }
+    );
+    if (res.ok) {
+      const json = await res.json();
+      console.log(`[RapidAPI/ski-resort-forecast] ${resort.name}:`, json);
+      const cond = Array.isArray(json) ? json[0] : json;
+      const openTrails = cond?.openRuns ?? cond?.openTrails ?? cond?.open_runs ?? null;
+      const snowBaseIn = cond?.baseDepth ?? cond?.base ?? cond?.snowBase ?? null;
+      if (openTrails !== null || snowBaseIn !== null) {
+        return { openTrails: openTrails ? parseInt(openTrails) : null,
+                 snowBaseIn: snowBaseIn ? parseInt(snowBaseIn) : null };
+      }
+    }
+  } catch (e) {
+    console.warn(`[RapidAPI/ski-resort-forecast] ${resort.name} failed:`, e);
+  }
+
+  // Try "Ski Resort API" (robwilhelmsson on RapidAPI)
+  try {
+    const host = 'ski-resort-api.p.rapidapi.com';
+    const res = await fetch(
+      `https://${host}/resorts?search=${encodeURIComponent(resort.name)}`,
+      { headers: { ...headers, 'x-rapidapi-host': host } }
+    );
+    if (res.ok) {
+      const json = await res.json();
+      console.log(`[RapidAPI/ski-resort-api] ${resort.name}:`, json);
+      const item = Array.isArray(json) ? json[0] : (json?.data?.[0] ?? json);
+      const openTrails = item?.openRuns ?? item?.openTrails ?? item?.terrain?.runsTotal ?? null;
+      const snowBaseIn = item?.depth?.base ?? item?.baseDepth ?? item?.snowBase ?? null;
+      if (openTrails !== null || snowBaseIn !== null) {
+        return { openTrails: openTrails ? parseInt(openTrails) : null,
+                 snowBaseIn: snowBaseIn ? parseInt(snowBaseIn) : null };
+      }
+    }
+  } catch (e) {
+    console.warn(`[RapidAPI/ski-resort-api] ${resort.name} failed:`, e);
+  }
+
+  return null; // null = RapidAPI had no data, fall through to CORS proxy
+}
+
 // ── CORS proxy list (tried in order) ──────────
 const PROXIES = [
   url => ({ url: `https://corsproxy.io/?${encodeURIComponent(url)}`, extract: r => r.text() }),
@@ -121,8 +218,13 @@ const PROXIES = [
   url => ({ url: `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`, extract: r => r.text() }),
 ];
 
-// ── Resort conditions fetch via CORS proxy ────
+// ── Resort conditions fetch (RapidAPI → CORS proxy fallback) ──
 async function fetchResortConditions(resort) {
+  // 1. Try RapidAPI first
+  const rapidResult = await fetchRapidAPI(resort);
+  if (rapidResult !== null) return rapidResult;
+
+  // 2. Fall back to CORS proxy scraping
   if (!resort.conditionsUrl) return { openTrails: null, snowBaseIn: null };
 
   for (const makeProxy of PROXIES) {
