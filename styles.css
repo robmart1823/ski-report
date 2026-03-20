@@ -254,6 +254,12 @@ main {
   margin-left: 0.1rem;
 }
 
+.est-label {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
 /* ── Forecast ── */
 .forecast {
   background: var(--surface-2);

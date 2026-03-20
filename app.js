@@ -8,98 +8,98 @@ const RAPIDAPI_KEY = '71842f5d36msh09044293d4984efp14ea41jsn5b6307aa7ccb';
 const RESORTS = [
   // Vermont
   { name: 'Bolton Valley',    state: 'VT', lat: 44.4186, lon: -72.8722,
-    slug: 'bolton-valley',
+    slug: 'bolton-valley',        otsId: 50,
     url: 'https://www.boltonvalley.com',
     conditionsUrl: 'https://www.boltonvalley.com/mountain-info/snow-conditions/',
     totalTrails: 71 },
   { name: 'Burke Mountain',   state: 'VT', lat: 44.5895, lon: -71.9007,
-    slug: 'burke-mountain',
+    slug: 'burke-mountain',       otsId: 100,
     url: 'https://www.skiburke.com',
     conditionsUrl: 'https://www.skiburke.com/mountain-info/conditions/',
     totalTrails: 50 },
   { name: 'Jay Peak',         state: 'VT', lat: 44.9280, lon: -72.5235,
-    slug: 'jay-peak',
+    slug: 'jay-peak',             otsId: 222,
     url: 'https://jaypeakresort.com',
     conditionsUrl: 'https://jaypeakresort.com/mountain/conditions/',
     totalTrails: 78 },
   { name: 'Magic Mountain',   state: 'VT', lat: 43.3528, lon: -72.8331,
-    slug: 'magic-mountain',
+    slug: 'magic-mountain',       otsId: 323,
     url: 'https://www.skimagic.com',
     conditionsUrl: 'https://www.skimagic.com/conditions/',
     totalTrails: 40 },
   { name: 'Saskadena Six',    state: 'VT', lat: 43.9159, lon: -72.5668,
-    slug: 'saskadena-six',
+    slug: 'saskadena-six',        otsId: null,
     url: 'https://www.saskadena6.com',
     conditionsUrl: 'https://www.saskadena6.com/',
     totalTrails: 19 },
 
   // New Hampshire
   { name: 'Black Mountain',   state: 'NH', lat: 44.1520, lon: -71.1990,
-    slug: 'black-mountain-nh',
+    slug: 'black-mountain-nh',    otsId: null,
     url: 'https://www.blackmt.com',
     conditionsUrl: 'https://www.blackmt.com/skiing/conditions/',
     totalTrails: 45 },
   { name: 'Cannon Mountain',  state: 'NH', lat: 44.1541, lon: -71.6925,
-    slug: 'cannon-mountain',
+    slug: 'cannon-mountain',      otsId: 112,
     url: 'https://www.cannonmt.com',
     conditionsUrl: 'https://www.cannonmt.com/mountain/snow-conditions/',
     totalTrails: 72 },
   { name: 'Dartmouth Skiway', state: 'NH', lat: 43.8167, lon: -72.0656,
-    slug: 'dartmouth-skiway',
+    slug: 'dartmouth-skiway',     otsId: null,
     url: 'https://skiway.dartmouth.edu',
     conditionsUrl: 'https://skiway.dartmouth.edu/conditions/',
     totalTrails: 23 },
   { name: 'Pats Peak',        state: 'NH', lat: 43.1568, lon: -71.7548,
-    slug: 'pats-peak',
+    slug: 'pats-peak',            otsId: 392,
     url: 'https://www.patspeak.com',
     conditionsUrl: 'https://www.patspeak.com/mountain/conditions/',
     totalTrails: 28 },
   { name: 'Tenney Mountain',  state: 'NH', lat: 43.8100, lon: -71.8500,
-    slug: 'tenney-mountain',
+    slug: 'tenney-mountain',      otsId: null,
     url: 'https://www.tenneymtn.com',
     conditionsUrl: 'https://www.tenneymtn.com/mountain/conditions/',
     totalTrails: 50 },
   { name: 'Waterville Valley',state: 'NH', lat: 43.9700, lon: -71.5100,
-    slug: 'waterville-valley',
+    slug: 'waterville-valley',    otsId: 571,
     url: 'https://www.waterville.com',
     conditionsUrl: 'https://www.waterville.com/mountain-info/trail-conditions/',
     totalTrails: 52 },
 
   // Maine
   { name: 'Big Moose Mountain', state: 'ME', lat: 45.5400, lon: -69.8700,
-    slug: 'big-moose-mountain',
+    slug: 'big-moose-mountain',   otsId: null,
     url: 'https://bigmoosemtn.com',
     conditionsUrl: 'https://bigmoosemtn.com/conditions/',
     totalTrails: 49 },
   { name: 'Big Rock',           state: 'ME', lat: 46.8900, lon: -68.1300,
-    slug: 'big-rock',
+    slug: 'big-rock',             otsId: null,
     url: 'https://www.bigrockmaine.com',
     conditionsUrl: 'https://www.bigrockmaine.com/conditions/',
     totalTrails: 30 },
   { name: 'Camden Snow Bowl',   state: 'ME', lat: 44.2240, lon: -69.0880,
-    slug: 'camden-snow-bowl',
+    slug: 'camden-snow-bowl',     otsId: null,
     url: 'https://camdensnowbowl.com',
     conditionsUrl: 'https://camdensnowbowl.com/ski-conditions/',
     totalTrails: 28 },
   { name: 'Mt. Abram',          state: 'ME', lat: 44.5900, lon: -70.6800,
-    slug: 'mt-abram',
+    slug: 'mt-abram',             otsId: null,
     url: 'https://www.mtabram.com',
     conditionsUrl: 'https://www.mtabram.com/conditions/',
     totalTrails: 44 },
 
   // Massachusetts
   { name: 'Berkshire East',   state: 'MA', lat: 42.5432, lon: -72.9151,
-    slug: 'berkshire-east',
+    slug: 'berkshire-east',       otsId: null,
     url: 'https://www.berkshireeast.com',
     conditionsUrl: 'https://www.berkshireeast.com/ski-conditions/',
     totalTrails: 45 },
   { name: 'Bousquet Mountain',state: 'MA', lat: 42.4500, lon: -73.2800,
-    slug: 'bousquet-mountain',
+    slug: 'bousquet-mountain',    otsId: null,
     url: 'https://www.bousquets.com',
     conditionsUrl: 'https://www.bousquets.com/conditions/',
     totalTrails: 23 },
   { name: 'Catamount',        state: 'MA', lat: 42.1273, lon: -73.4440,
-    slug: 'catamount',
+    slug: 'catamount',            otsId: null,
     url: 'https://www.catamountski.com',
     conditionsUrl: 'https://www.catamountski.com/conditions/',
     totalTrails: 36 },
@@ -218,9 +218,44 @@ const PROXIES = [
   url => ({ url: `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`, extract: r => r.text() }),
 ];
 
-// ── Resort conditions fetch (RapidAPI → CORS proxy fallback) ──
+// ── OnTheSnow fetch (free, no key needed) ─────
+// Uses their public JSON endpoint that powers the OTS mobile app.
+async function fetchOnTheSnow(resort) {
+  if (!resort.otsId) return null;
+  const apiUrl = `https://www.onthesnow.com/api/v2/resort/${resort.otsId}/conditions`;
+  for (const makeProxy of PROXIES) {
+    try {
+      const controller = new AbortController();
+      const tid = setTimeout(() => controller.abort(), 8000);
+      const { url: proxyUrl, extract } = makeProxy(apiUrl);
+      const res = await fetch(proxyUrl, { signal: controller.signal });
+      clearTimeout(tid);
+      if (!res.ok) continue;
+      const text = await extract(res);
+      let json;
+      try { json = JSON.parse(text); } catch { continue; }
+      console.log(`[OnTheSnow] ${resort.name}:`, json);
+      const d = json?.data ?? json?.resort ?? json;
+      const openTrails = d?.openTrails ?? d?.open_trails ?? d?.openRuns ?? null;
+      const snowBaseIn = d?.baseDepth  ?? d?.snow_base   ?? d?.snowBase ?? d?.base ?? null;
+      if (openTrails !== null || snowBaseIn !== null) {
+        return {
+          openTrails: openTrails !== null ? parseInt(openTrails) : null,
+          snowBaseIn: snowBaseIn !== null ? parseInt(snowBaseIn) : null,
+        };
+      }
+    } catch { continue; }
+  }
+  return null;
+}
+
+// ── Resort conditions fetch (OnTheSnow → RapidAPI → CORS proxy) ──
 async function fetchResortConditions(resort) {
-  // 1. Try RapidAPI first
+  // 1. Try OnTheSnow (free, no key)
+  const otsResult = await fetchOnTheSnow(resort);
+  if (otsResult !== null) return otsResult;
+
+  // 2. Try RapidAPI
   const rapidResult = await fetchRapidAPI(resort);
   if (rapidResult !== null) return rapidResult;
 
@@ -372,19 +407,26 @@ function populateCard(resort, weatherData, conditionsData) {
   const { baseInches, forecast, dates } = weatherData;
   const { openTrails = null, snowBaseIn = null } = conditionsData || {};
 
-  // Use resort-reported base if available.
-  // Only use Open-Meteo snow_depth if > 0 (0 usually means no mountain snow data, not truly 0").
-  const displayBase = snowBaseIn ?? (baseInches > 0 ? baseInches : null);
+  // Use resort-reported base if available, fall back to Open-Meteo snow_depth estimate.
+  // Show the estimate even when low/0 — late season or low snow is still real data.
+  const liveBase = snowBaseIn;
+  const estBase  = baseInches; // may be 0 or null
+  const displayBase = liveBase ?? estBase;
   card.className = `card ${cardStatus(displayBase)}`;
 
-  const baseDisplay = displayBase !== null
-    ? `<span class="stat-value">${displayBase}</span><span class="stat-unit">in</span>`
-    : `<span class="stat-value na">No data</span>`;
+  let baseDisplay;
+  if (liveBase !== null) {
+    baseDisplay = `<span class="stat-value">${liveBase}</span><span class="stat-unit">in</span>`;
+  } else if (estBase !== null) {
+    baseDisplay = `<span class="stat-value">${estBase}</span><span class="stat-unit">in <span class="est-label">est.</span></span>`;
+  } else {
+    baseDisplay = `<span class="stat-value na">No data</span>`;
+  }
 
-  // Open trails: X/total — show "—/total" when live count unavailable
+  // Open trails: X/total — show "? /total" when live count unavailable
   const trailsDisplay = openTrails !== null
     ? `<span class="stat-value">${openTrails}</span><span class="stat-unit">/${resort.totalTrails}</span>`
-    : `<span class="stat-value na">—/${resort.totalTrails}</span>`;
+    : `<span class="stat-value na">?</span><span class="stat-unit">/${resort.totalTrails}</span>`;
 
   card.innerHTML = `
     <div class="card-header">
