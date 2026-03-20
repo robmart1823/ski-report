@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Indy Pass — Northeast Ski Report</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <div class="logo">
+        <span class="flake">❄</span>
+        <div>
+          <h1>Indy Pass Northeast</h1>
+          <p class="tagline">Live Ski Conditions · MA · NH · VT · ME</p>
+        </div>
+      </div>
+      <div class="updated-wrap">
+        <span class="updated-label">Updated</span>
+        <span id="last-updated">—</span>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="filter-bar">
+      <button class="filter-btn active" data-state="all">All</button>
+      <button class="filter-btn" data-state="VT">Vermont</button>
+      <button class="filter-btn" data-state="NH">New Hampshire</button>
+      <button class="filter-btn" data-state="ME">Maine</button>
+      <button class="filter-btn" data-state="MA">Massachusetts</button>
+    </div>
+
+    <p class="data-note">
+      Snow depth &amp; 7-day forecast from <a href="https://open-meteo.com" target="_blank">Open-Meteo</a>.
+      Trail counts require a visit to the resort site.
+    </p>
+
+    <div class="grid" id="resort-grid">
+      <!-- Cards injected by app.js -->
+    </div>
+  </main>
+
+  <footer>
+    <p>Data sourced from Open-Meteo · Not affiliated with Indy Pass</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
