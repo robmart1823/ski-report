@@ -240,9 +240,9 @@ main {
 }
 
 .stat-value.na {
-  font-size: 0.85rem;
+  font-size: 1rem;
   color: var(--text-muted);
-  line-height: 1.6;
+  line-height: 1.4;
 }
 
 .stat-unit {

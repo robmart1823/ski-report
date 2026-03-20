@@ -4,30 +4,84 @@
 
 const RESORTS = [
   // Vermont
-  { name: 'Bolton Valley',    state: 'VT', lat: 44.4186, lon: -72.8722, url: 'https://www.boltonvalley.com' },
-  { name: 'Burke Mountain',   state: 'VT', lat: 44.5895, lon: -71.9007, url: 'https://www.skiburke.com' },
-  { name: 'Jay Peak',         state: 'VT', lat: 44.9280, lon: -72.5235, url: 'https://jaypeakresort.com' },
-  { name: 'Magic Mountain',   state: 'VT', lat: 43.3528, lon: -72.8331, url: 'https://www.skimagic.com' },
-  { name: 'Saskadena Six',    state: 'VT', lat: 43.9159, lon: -72.5668, url: 'https://www.saskadena6.com' },
+  { name: 'Bolton Valley',    state: 'VT', lat: 44.4186, lon: -72.8722,
+    url: 'https://www.boltonvalley.com',
+    conditionsUrl: 'https://www.boltonvalley.com/mountain-info/snow-conditions/',
+    totalTrails: 71 },
+  { name: 'Burke Mountain',   state: 'VT', lat: 44.5895, lon: -71.9007,
+    url: 'https://www.skiburke.com',
+    conditionsUrl: 'https://www.skiburke.com/mountain-info/conditions/',
+    totalTrails: 50 },
+  { name: 'Jay Peak',         state: 'VT', lat: 44.9280, lon: -72.5235,
+    url: 'https://jaypeakresort.com',
+    conditionsUrl: 'https://jaypeakresort.com/mountain/conditions/',
+    totalTrails: 78 },
+  { name: 'Magic Mountain',   state: 'VT', lat: 43.3528, lon: -72.8331,
+    url: 'https://www.skimagic.com',
+    conditionsUrl: 'https://www.skimagic.com/conditions/',
+    totalTrails: 40 },
+  { name: 'Saskadena Six',    state: 'VT', lat: 43.9159, lon: -72.5668,
+    url: 'https://www.saskadena6.com',
+    conditionsUrl: 'https://www.saskadena6.com/',
+    totalTrails: 19 },
 
   // New Hampshire
-  { name: 'Black Mountain',   state: 'NH', lat: 44.1520, lon: -71.1990, url: 'https://www.blackmt.com' },
-  { name: 'Cannon Mountain',  state: 'NH', lat: 44.1541, lon: -71.6925, url: 'https://www.cannonmt.com' },
-  { name: 'Dartmouth Skiway', state: 'NH', lat: 43.8167, lon: -72.0656, url: 'https://skiway.dartmouth.edu' },
-  { name: 'Pats Peak',        state: 'NH', lat: 43.1568, lon: -71.7548, url: 'https://www.patspeak.com' },
-  { name: 'Tenney Mountain',  state: 'NH', lat: 43.8100, lon: -71.8500, url: 'https://www.tenneymtn.com' },
-  { name: 'Waterville Valley',state: 'NH', lat: 43.9700, lon: -71.5100, url: 'https://www.waterville.com' },
+  { name: 'Black Mountain',   state: 'NH', lat: 44.1520, lon: -71.1990,
+    url: 'https://www.blackmt.com',
+    conditionsUrl: 'https://www.blackmt.com/skiing/conditions/',
+    totalTrails: 45 },
+  { name: 'Cannon Mountain',  state: 'NH', lat: 44.1541, lon: -71.6925,
+    url: 'https://www.cannonmt.com',
+    conditionsUrl: 'https://www.cannonmt.com/mountain/snow-conditions/',
+    totalTrails: 72 },
+  { name: 'Dartmouth Skiway', state: 'NH', lat: 43.8167, lon: -72.0656,
+    url: 'https://skiway.dartmouth.edu',
+    conditionsUrl: 'https://skiway.dartmouth.edu/conditions/',
+    totalTrails: 23 },
+  { name: 'Pats Peak',        state: 'NH', lat: 43.1568, lon: -71.7548,
+    url: 'https://www.patspeak.com',
+    conditionsUrl: 'https://www.patspeak.com/mountain/conditions/',
+    totalTrails: 28 },
+  { name: 'Tenney Mountain',  state: 'NH', lat: 43.8100, lon: -71.8500,
+    url: 'https://www.tenneymtn.com',
+    conditionsUrl: 'https://www.tenneymtn.com/mountain/conditions/',
+    totalTrails: 50 },
+  { name: 'Waterville Valley',state: 'NH', lat: 43.9700, lon: -71.5100,
+    url: 'https://www.waterville.com',
+    conditionsUrl: 'https://www.waterville.com/mountain-info/trail-conditions/',
+    totalTrails: 52 },
 
   // Maine
-  { name: 'Big Moose Mountain', state: 'ME', lat: 45.5400, lon: -69.8700, url: 'https://bigmoosemtn.com' },
-  { name: 'Big Rock',           state: 'ME', lat: 46.8900, lon: -68.1300, url: 'https://www.bigrockmaine.com' },
-  { name: 'Camden Snow Bowl',   state: 'ME', lat: 44.2240, lon: -69.0880, url: 'https://camdensnowbowl.com' },
-  { name: 'Mt. Abram',          state: 'ME', lat: 44.5900, lon: -70.6800, url: 'https://www.mtabram.com' },
+  { name: 'Big Moose Mountain', state: 'ME', lat: 45.5400, lon: -69.8700,
+    url: 'https://bigmoosemtn.com',
+    conditionsUrl: 'https://bigmoosemtn.com/conditions/',
+    totalTrails: 49 },
+  { name: 'Big Rock',           state: 'ME', lat: 46.8900, lon: -68.1300,
+    url: 'https://www.bigrockmaine.com',
+    conditionsUrl: 'https://www.bigrockmaine.com/conditions/',
+    totalTrails: 30 },
+  { name: 'Camden Snow Bowl',   state: 'ME', lat: 44.2240, lon: -69.0880,
+    url: 'https://camdensnowbowl.com',
+    conditionsUrl: 'https://camdensnowbowl.com/ski-conditions/',
+    totalTrails: 28 },
+  { name: 'Mt. Abram',          state: 'ME', lat: 44.5900, lon: -70.6800,
+    url: 'https://www.mtabram.com',
+    conditionsUrl: 'https://www.mtabram.com/conditions/',
+    totalTrails: 44 },
 
   // Massachusetts
-  { name: 'Berkshire East',   state: 'MA', lat: 42.5432, lon: -72.9151, url: 'https://www.berkshireeast.com' },
-  { name: 'Bousquet Mountain',state: 'MA', lat: 42.4500, lon: -73.2800, url: 'https://www.bousquets.com' },
-  { name: 'Catamount',        state: 'MA', lat: 42.1273, lon: -73.4440, url: 'https://www.catamountski.com' },
+  { name: 'Berkshire East',   state: 'MA', lat: 42.5432, lon: -72.9151,
+    url: 'https://www.berkshireeast.com',
+    conditionsUrl: 'https://www.berkshireeast.com/ski-conditions/',
+    totalTrails: 45 },
+  { name: 'Bousquet Mountain',state: 'MA', lat: 42.4500, lon: -73.2800,
+    url: 'https://www.bousquets.com',
+    conditionsUrl: 'https://www.bousquets.com/conditions/',
+    totalTrails: 23 },
+  { name: 'Catamount',        state: 'MA', lat: 42.1273, lon: -73.4440,
+    url: 'https://www.catamountski.com',
+    conditionsUrl: 'https://www.catamountski.com/conditions/',
+    totalTrails: 36 },
 ];
 
 const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -58,6 +112,75 @@ async function fetchWeather(resort) {
   const dates = data.daily?.time ?? [];
 
   return { baseInches, forecast, dates };
+}
+
+// ── Resort conditions fetch via CORS proxy ────
+async function fetchResortConditions(resort) {
+  if (!resort.conditionsUrl) return { openTrails: null, snowBaseIn: null };
+
+  try {
+    const controller = new AbortController();
+    const tid = setTimeout(() => controller.abort(), 7000);
+
+    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(resort.conditionsUrl)}`;
+    const res = await fetch(proxyUrl, { signal: controller.signal });
+    clearTimeout(tid);
+
+    if (!res.ok) return { openTrails: null, snowBaseIn: null };
+
+    const json = await res.json();
+    if (json.status?.http_code !== 200) return { openTrails: null, snowBaseIn: null };
+
+    return parseConditions(json.contents ?? '');
+  } catch {
+    return { openTrails: null, snowBaseIn: null };
+  }
+}
+
+// ── Parse snow base & open trails from HTML ───
+function parseConditions(html) {
+  // Strip tags and normalize whitespace for text matching
+  const text = html
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&quot;/g, '"')
+    .replace(/&#8221;/g, '"')
+    .replace(/&#8220;/g, '"')
+    .replace(/&amp;/g, '&')
+    .replace(/\s+/g, ' ');
+
+  let openTrails = null;
+  let snowBaseIn = null;
+
+  // Open trails patterns
+  const trailPatterns = [
+    /(\d+)\s*(?:of\s*\d+\s*)?trails?\s*open/i,
+    /open\s*(?:trails?|runs?)[:\s]+(\d+)/i,
+    /trails?\s*open[:\s]+(\d+)/i,
+    /(\d+)\s*runs?\s*open/i,
+    /(\d+)\s*open\s*trails?/i,
+  ];
+  for (const pat of trailPatterns) {
+    const m = text.match(pat);
+    if (m) { openTrails = parseInt(m[1]); break; }
+  }
+
+  // Snow base patterns (inches)
+  const basePatterns = [
+    /base\s*(?:depth)?[^a-z]{0,5}(\d+)\s*(?:"|inches?|in\b)/i,
+    /(\d+)\s*["""]\s*(?:base|snow\s*base)/i,
+    /base[:\s–\-]+(\d+)["""]/i,
+    /snow\s*(?:base|depth)[:\s–\-]+(\d+)/i,
+    /base\s*depth[:\s–\-]+(\d+)/i,
+  ];
+  for (const pat of basePatterns) {
+    const m = text.match(pat);
+    if (m) {
+      const val = parseInt(m[1]);
+      if (val > 0 && val <= 250) { snowBaseIn = val; break; }
+    }
+  }
+
+  return { openTrails, snowBaseIn };
 }
 
 // ── Card status helper ────────────────────────
@@ -124,17 +247,25 @@ function buildForecast(forecast, dates) {
 }
 
 // ── Populate card with real data ──────────────
-function populateCard(resort, weatherData) {
+function populateCard(resort, weatherData, conditionsData) {
   const card = document.getElementById(`card-${resort.name.replace(/\s+/g, '-')}`);
   if (!card) return;
 
   const { baseInches, forecast, dates } = weatherData;
+  const { openTrails = null, snowBaseIn = null } = conditionsData || {};
 
-  card.className = `card ${cardStatus(baseInches)}`;
+  // Use resort-reported base if available, otherwise Open-Meteo model estimate
+  const displayBase = snowBaseIn ?? baseInches;
+  card.className = `card ${cardStatus(displayBase)}`;
 
-  const baseDisplay = baseInches !== null
-    ? `<span class="stat-value">${baseInches}</span><span class="stat-unit">in</span>`
+  const baseDisplay = displayBase !== null
+    ? `<span class="stat-value">${displayBase}</span><span class="stat-unit">in</span>`
     : `<span class="stat-value na">No data</span>`;
+
+  // Open trails: X/total — show "—/total" when live count unavailable
+  const trailsDisplay = openTrails !== null
+    ? `<span class="stat-value">${openTrails}</span><span class="stat-unit">/${resort.totalTrails}</span>`
+    : `<span class="stat-value na">—/${resort.totalTrails}</span>`;
 
   card.innerHTML = `
     <div class="card-header">
@@ -148,7 +279,7 @@ function populateCard(resort, weatherData) {
       </div>
       <div class="stat">
         <div class="stat-label">Open Trails</div>
-        <div class="stat-value na">See resort →</div>
+        <div>${trailsDisplay}</div>
       </div>
     </div>
     <div class="forecast">
@@ -199,23 +330,31 @@ async function init() {
   const updatedEl = document.getElementById('last-updated');
 
   // Render skeleton cards immediately
-  RESORTS.forEach(resort => {
-    grid.appendChild(buildSkeletonCard(resort));
-  });
+  RESORTS.forEach(resort => grid.appendChild(buildSkeletonCard(resort)));
 
   // Wire up filter buttons
   document.querySelectorAll('.filter-btn').forEach(btn => {
     btn.addEventListener('click', () => applyFilter(btn.dataset.state));
   });
 
-  // Fetch all resorts in parallel
-  const results = await Promise.allSettled(
-    RESORTS.map(resort => fetchWeather(resort))
+  // Fetch weather + resort conditions for all resorts in parallel
+  const results = await Promise.all(
+    RESORTS.map(async resort => {
+      const [weatherResult, conditionsResult] = await Promise.allSettled([
+        fetchWeather(resort),
+        fetchResortConditions(resort),
+      ]);
+      return { weatherResult, conditionsResult };
+    })
   );
 
-  results.forEach((result, i) => {
-    if (result.status === 'fulfilled') {
-      populateCard(RESORTS[i], result.value);
+  results.forEach(({ weatherResult, conditionsResult }, i) => {
+    const conditionsData = conditionsResult.status === 'fulfilled'
+      ? conditionsResult.value
+      : { openTrails: null, snowBaseIn: null };
+
+    if (weatherResult.status === 'fulfilled') {
+      populateCard(RESORTS[i], weatherResult.value, conditionsData);
     } else {
       errorCard(RESORTS[i]);
     }
