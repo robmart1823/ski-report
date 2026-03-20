@@ -109,12 +109,16 @@ const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 // ── Open-Meteo fetch ──────────────────────────
 async function fetchWeather(resort) {
+  // Request both current and hourly snow_depth (past 24h + 7 days ahead).
+  // Hourly gives us a reliable series to pick the most recent non-null value from.
   const url =
     `https://api.open-meteo.com/v1/forecast` +
     `?latitude=${resort.lat}&longitude=${resort.lon}` +
     `&current=snow_depth` +
+    `&hourly=snow_depth` +
     `&daily=snowfall_sum` +
     `&forecast_days=7` +
+    `&past_hours=24` +
     `&precipitation_unit=inch` +
     `&timezone=auto`;
 
@@ -123,7 +127,15 @@ async function fetchWeather(resort) {
   const data = await res.json();
 
   // snow_depth is always in meters from Open-Meteo → convert to inches
-  const rawDepth = data.current?.snow_depth ?? null;
+  // Prefer current value; fall back to most recent hourly value that isn't null
+  let rawDepth = data.current?.snow_depth ?? null;
+  if (rawDepth === null) {
+    const hourlyDepths = data.hourly?.snow_depth ?? [];
+    // Walk backwards to find the most recent non-null reading
+    for (let i = hourlyDepths.length - 1; i >= 0; i--) {
+      if (hourlyDepths[i] !== null) { rawDepth = hourlyDepths[i]; break; }
+    }
+  }
   const baseInches = rawDepth !== null ? Math.round(rawDepth * 39.37) : null;
 
   // snowfall_sum is in inches (we requested precipitation_unit=inch)
