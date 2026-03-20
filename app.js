@@ -8,7 +8,7 @@ const RAPIDAPI_KEY = '71842f5d36msh09044293d4984efp14ea41jsn5b6307aa7ccb';
 const RESORTS = [
   // Vermont
   { name: 'Bolton Valley',    state: 'VT', lat: 44.4186, lon: -72.8722,
-    slug: 'bolton-valley',    liftie: 'bolton-valley',
+    slug: 'bolton-valley',    liftie: 'bolton-valley',  snoId: '802002',
     url: 'https://www.boltonvalley.com',
     conditionsUrl: 'https://www.boltonvalley.com/mountain-info/snow-conditions/',
     totalTrails: 71 },
@@ -18,7 +18,7 @@ const RESORTS = [
     conditionsUrl: 'https://www.skiburke.com/mountain-info/conditions/',
     totalTrails: 50 },
   { name: 'Jay Peak',         state: 'VT', lat: 44.9280, lon: -72.5235,
-    slug: 'jay-peak',         liftie: 'jay-peak',
+    slug: 'jay-peak',         liftie: 'jay-peak',       snoId: '802006',
     url: 'https://jaypeakresort.com',
     conditionsUrl: 'https://jaypeakresort.com/mountain/conditions/',
     totalTrails: 78 },
@@ -231,56 +231,76 @@ const PROXIES = [
 ];
 
 // ── SnoCountry feed API (free, state-level queries) ───────────────
-// Tries HTTPS first (no proxy needed), then falls back through CORS proxies.
-// &output=json is required — without it the API returns XML.
-let _snoCache = null; // { normalizedName: { openTrails, snowBaseIn } }
+// All proxies are raced in parallel per-state; fast success wins.
+// &output=json required — without it the API returns XML.
+let _snoCache = null; // { normalizedName: { openTrails, snowBaseIn } } | null while loading
 
-async function loadSnoCountry() {
-  if (_snoCache !== null) return _snoCache;
-  _snoCache = {};
+const SNO_PROXIES = [
+  url => ({ url: url.replace('http://', 'https://'), extract: r => r.text() }), // HTTPS direct (no CORS)
+  ...PROXIES,
+];
 
-  const normalize = s => s.toLowerCase().replace(/[^a-z0-9 ]/g, '').replace(/\s+/g, ' ').trim();
+function _snoNormalize(s) {
+  return s.toLowerCase().replace(/[^a-z0-9 ]/g, '').replace(/\s+/g, ' ').trim();
+}
 
-  // Build a proxy list that tries HTTPS direct first, then CORS proxies for HTTP fallback
-  const snoProxies = [
-    url => ({ url: url.replace('http://', 'https://'), extract: r => r.text() }), // HTTPS direct
-    ...PROXIES, // CORS proxy fallbacks
-  ];
+async function _snoFetchItems(apiUrl) {
+  // Race all proxies simultaneously — first valid JSON with items wins
+  const attempts = SNO_PROXIES.map(async makeProxy => {
+    const { url: proxyUrl, extract } = makeProxy(apiUrl);
+    const controller = new AbortController();
+    const tid = setTimeout(() => controller.abort(), 5000);
+    const res = await fetch(proxyUrl, { signal: controller.signal });
+    clearTimeout(tid);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const text = await extract(res);
+    const json = JSON.parse(text); // throws if not JSON
+    const items = json?.items ?? (Array.isArray(json) ? json : null);
+    if (!items || items.length === 0) throw new Error('empty');
+    return items;
+  });
+  return Promise.any(attempts); // resolves with first success, rejects if all fail
+}
 
-  await Promise.allSettled(['vt', 'nh', 'me', 'ma'].map(async state => {
-    const apiUrl = `http://feeds.snocountry.net/getSnowReport.php?apiKey=SnoCountry.example&states=${state}&output=json`;
-    for (const makeProxy of snoProxies) {
-      try {
-        const controller = new AbortController();
-        const tid = setTimeout(() => controller.abort(), 9000);
-        const { url: proxyUrl, extract } = makeProxy(apiUrl);
-        const res = await fetch(proxyUrl, { signal: controller.signal });
-        clearTimeout(tid);
-        if (!res.ok) continue;
-        const text = await extract(res);
-        let json;
-        try { json = JSON.parse(text); } catch { continue; }
-        const items = json?.items ?? (Array.isArray(json) ? json : []);
-        if (!Array.isArray(items) || items.length === 0) continue; // got XML or empty
-        console.log(`[SnoCountry/${state}] ${items.length} resorts`);
-        for (const item of items) {
-          const name = normalize(item.resortName ?? '');
-          if (!name) continue;
-          const baseMax = item.avgBaseDepthMax ? parseInt(item.avgBaseDepthMax) : null;
-          const baseMin = item.avgBaseDepthMin ? parseInt(item.avgBaseDepthMin) : null;
-          _snoCache[name] = {
-            openTrails: item.openDownHillTrails ? parseInt(item.openDownHillTrails) : null,
-            snowBaseIn: baseMax ?? baseMin,
-          };
-        }
-        return; // success for this state
-      } catch { continue; }
-    }
-    console.warn(`[SnoCountry/${state}] all proxies failed`);
-  }));
+function _snoMerge(items) {
+  for (const item of items) {
+    const name = _snoNormalize(item.resortName ?? '');
+    if (!name) continue;
+    const baseMax = item.avgBaseDepthMax ? parseInt(item.avgBaseDepthMax) : null;
+    const baseMin = item.avgBaseDepthMin ? parseInt(item.avgBaseDepthMin) : null;
+    _snoCache[name] = {
+      openTrails: item.openDownHillTrails ? parseInt(item.openDownHillTrails) : null,
+      snowBaseIn: baseMax ?? baseMin,
+    };
+  }
+}
 
-  console.log('[SnoCountry] cache keys:', Object.keys(_snoCache));
-  return _snoCache;
+function loadSnoCountry() {
+  if (_snoCache !== null) return Promise.resolve(_snoCache);
+  _snoCache = {}; // mark loading started (empty ≠ null)
+
+  const stateQueries = ['vt', 'nh', 'me', 'ma'].map(state => {
+    const url = `http://feeds.snocountry.net/getSnowReport.php?apiKey=SnoCountry.example&states=${state}&output=json`;
+    return _snoFetchItems(url)
+      .then(items => { console.log(`[SnoCountry/${state}] ${items.length} resorts`); _snoMerge(items); })
+      .catch(() => console.warn(`[SnoCountry/${state}] all attempts failed`));
+  });
+
+  // Also try known individual IDs (demo key: 3 per call)
+  const knownIds = RESORTS.filter(r => r.snoId);
+  const idQueries = [];
+  for (let i = 0; i < knownIds.length; i += 3) {
+    const ids = knownIds.slice(i, i + 3).map(r => r.snoId).join(',');
+    const url = `http://feeds.snocountry.net/getSnowReport.php?apiKey=SnoCountry.example&ids=${ids}&output=json`;
+    idQueries.push(
+      _snoFetchItems(url)
+        .then(items => { console.log(`[SnoCountry/ids=${ids}] ${items.length} resorts`); _snoMerge(items); })
+        .catch(() => {})
+    );
+  }
+
+  return Promise.allSettled([...stateQueries, ...idQueries])
+    .then(() => { console.log('[SnoCountry] done, keys:', Object.keys(_snoCache)); return _snoCache; });
 }
 
 // ── Liftie.info API (open-source, free, direct HTTPS) ─────────────
@@ -292,7 +312,7 @@ async function fetchLiftie(resort) {
     const tid = setTimeout(() => controller.abort(), 7000);
     const res = await fetch(`https://liftie.info/api/resort/${resort.liftie}`, { signal: controller.signal });
     clearTimeout(tid);
-    if (!res.ok) return null;
+    if (!res.ok) { console.warn(`[Liftie] ${resort.name}: HTTP ${res.status} for slug "${resort.liftie}"`); return null; }
     const json = await res.json();
     console.log(`[Liftie] ${resort.name}:`, json?.lifts?.status);
     const status = json?.lifts?.status ?? {};
@@ -321,8 +341,10 @@ function lookupSnoCountry(resort) {
 }
 
 // ── Resort conditions fetch (SnoCountry → Liftie → RapidAPI → CORS scrape) ──
-async function fetchResortConditions(resort) {
-  // 1. SnoCountry (pre-loaded in init)
+async function fetchResortConditions(resort, snoReady) {
+  // 1. SnoCountry — wait for cache, but cap at 6s so Liftie can still run
+  const timeout = new Promise(r => setTimeout(r, 6000));
+  await Promise.race([snoReady, timeout]);
   const sno = lookupSnoCountry(resort);
   if (sno && (sno.openTrails !== null || sno.snowBaseIn !== null)) return sno;
 
@@ -573,33 +595,30 @@ async function init() {
     btn.addEventListener('click', () => applyFilter(btn.dataset.state));
   });
 
-  // Pre-load SnoCountry data (one call per state) before per-resort fetches
-  await loadSnoCountry();
+  // Start SnoCountry loading in background — don't block card rendering
+  const snoReady = loadSnoCountry();
 
-  // Fetch weather + resort conditions for all resorts in parallel
-  const results = await Promise.all(
+  // Fetch + render each card as soon as its data arrives (progressive)
+  await Promise.all(
     RESORTS.map(async resort => {
       const [weatherResult, conditionsResult] = await Promise.allSettled([
         fetchWeather(resort),
-        fetchResortConditions(resort),
+        fetchResortConditions(resort, snoReady),
       ]);
-      return { weatherResult, conditionsResult };
+
+      const conditionsData = conditionsResult.status === 'fulfilled'
+        ? conditionsResult.value
+        : { openTrails: null, snowBaseIn: null, openLifts: null, totalLifts: null };
+
+      if (weatherResult.status === 'fulfilled') {
+        populateCard(resort, weatherResult.value, conditionsData);
+      } else {
+        errorCard(resort);
+      }
     })
   );
 
-  results.forEach(({ weatherResult, conditionsResult }, i) => {
-    const conditionsData = conditionsResult.status === 'fulfilled'
-      ? conditionsResult.value
-      : { openTrails: null, snowBaseIn: null };
-
-    if (weatherResult.status === 'fulfilled') {
-      populateCard(RESORTS[i], weatherResult.value, conditionsData);
-    } else {
-      errorCard(RESORTS[i]);
-    }
-  });
-
-  // Update timestamp
+  // Update timestamp after all cards rendered
   updatedEl.textContent = new Date().toLocaleTimeString([], {
     hour: '2-digit', minute: '2-digit'
   });
