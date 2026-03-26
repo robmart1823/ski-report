@@ -128,6 +128,84 @@ main {
   color: #fff;
 }
 
+/* ── Sort bar ── */
+.sort-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.sort-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin-right: 0.2rem;
+}
+
+.sort-btn {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  padding: 0.3rem 0.85rem;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 500;
+  transition: all 0.15s;
+}
+
+.sort-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent-light);
+}
+
+.sort-btn.active {
+  background: var(--surface-2);
+  border-color: var(--accent);
+  color: var(--accent-light);
+}
+
+.sort-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+/* ── Countdown ── */
+.countdown-wrap {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-top: 0.2rem;
+}
+
+#refresh-countdown {
+  color: var(--accent-light);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Powder badge ── */
+.powder-badge {
+  background: linear-gradient(135deg, rgba(74, 158, 221, 0.18), rgba(123, 190, 240, 0.1));
+  border: 1px solid rgba(74, 158, 221, 0.45);
+  color: var(--accent-light);
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  padding: 0.3rem 0.7rem;
+  border-radius: 6px;
+  text-align: center;
+  animation: powderPulse 2.2s ease-in-out infinite;
+}
+
+@keyframes powderPulse {
+  0%, 100% { border-color: rgba(74, 158, 221, 0.35); box-shadow: none; }
+  50%       { border-color: rgba(74, 158, 221, 0.85); box-shadow: 0 0 10px 2px rgba(74, 158, 221, 0.25); }
+}
+
 /* ── Data note ── */
 .data-note {
   font-size: 0.78rem;

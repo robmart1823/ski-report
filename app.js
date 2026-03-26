@@ -107,6 +107,12 @@ const RESORTS = [
 
 const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
+// ── Sort / refresh state ──────────────────────
+let currentSortKey = 'default';
+let _countdownTick = null;
+let _refreshTarget = 0;
+let _listenersWired = false;
+
 // ── Open-Meteo fetch ──────────────────────────
 async function fetchWeather(resort) {
   // Request both current and hourly snow_depth (past 24h + 7 days ahead).
@@ -506,6 +512,23 @@ function populateCard(resort, weatherData, conditionsData) {
   const displayBase = liveBase ?? estBase;
   card.className = `card ${cardStatus(displayBase)}`;
 
+  // ── Sort data attributes ──
+  const forecastTotal = forecast.reduce((s, v) => s + (v || 0), 0);
+  const trailRatio = openTrails !== null ? openTrails / (resort.totalTrails || 1) : 0;
+  const baseNorm = displayBase !== null ? Math.min(displayBase / 100, 1) : 0;
+  const forecastNorm = Math.min(forecastTotal / 20, 1);
+  const score = baseNorm * 0.5 + trailRatio * 0.3 + forecastNorm * 0.2;
+  card.dataset.base     = displayBase !== null ? displayBase : -1;
+  card.dataset.trails   = openTrails  !== null ? openTrails  : -1;
+  card.dataset.forecast7 = Math.round(forecastTotal * 10);
+  card.dataset.score    = score.toFixed(4);
+
+  // ── Powder badge: 3"+ expected in next 48h ──
+  const next48 = (forecast[0] ?? 0) + (forecast[1] ?? 0);
+  const powderBadge = next48 >= 3
+    ? `<div class="powder-badge">❄ ${next48}" INCOMING · NEXT 48H</div>`
+    : '';
+
   let baseDisplay;
   if (liveBase !== null) {
     baseDisplay = `<span class="stat-value">${liveBase}</span><span class="stat-unit">in</span>`;
@@ -530,6 +553,7 @@ function populateCard(resort, weatherData, conditionsData) {
       <span class="resort-name">${resort.name}</span>
       <span class="state-badge">${resort.state}</span>
     </div>
+    ${powderBadge}
     <div class="stats">
       <div class="stat">
         <div class="stat-label">Snow Base</div>
@@ -582,18 +606,98 @@ function applyFilter(state) {
   });
 }
 
+// ── Sort resort cards in the grid ─────────────
+function sortCards(key) {
+  const grid = document.getElementById('resort-grid');
+  const cards = [...grid.querySelectorAll('.card')];
+
+  const attrMap = { best: 'score', base: 'base', trails: 'trails', forecast: 'forecast7' };
+  const attr = attrMap[key];
+
+  const val = card => {
+    const v = parseFloat(card.dataset[attr]);
+    return isNaN(v) ? -1 : v;
+  };
+
+  if (key === 'default') {
+    cards.sort((a, b) => (a.dataset.order | 0) - (b.dataset.order | 0));
+  } else {
+    cards.sort((a, b) => {
+      const av = val(a), bv = val(b);
+      // No-data cards sink to the bottom
+      if (av < 0 && bv >= 0) return 1;
+      if (bv < 0 && av >= 0) return -1;
+      return bv - av; // descending
+    });
+  }
+
+  cards.forEach(card => grid.appendChild(card));
+}
+
+// ── Auto-refresh countdown (15 min) ───────────
+function startCountdown() {
+  if (_countdownTick) clearInterval(_countdownTick);
+  _refreshTarget = Date.now() + 15 * 60 * 1000;
+
+  function tick() {
+    const remaining = Math.max(0, _refreshTarget - Date.now());
+    const m = Math.floor(remaining / 60000);
+    const s = Math.floor((remaining % 60000) / 1000);
+    const el = document.getElementById('refresh-countdown');
+    if (el) el.textContent = `${m}:${s.toString().padStart(2, '0')}`;
+    if (remaining <= 0) {
+      clearInterval(_countdownTick);
+      _countdownTick = null;
+      init();
+    }
+  }
+
+  tick();
+  _countdownTick = setInterval(tick, 1000);
+}
+
 // ── Main ──────────────────────────────────────
 async function init() {
   const grid = document.getElementById('resort-grid');
   const updatedEl = document.getElementById('last-updated');
 
-  // Render skeleton cards immediately
-  RESORTS.forEach(resort => grid.appendChild(buildSkeletonCard(resort)));
+  // Snapshot active filter before clearing
+  const activeState = document.querySelector('.filter-btn.active')?.dataset.state ?? 'all';
 
-  // Wire up filter buttons
-  document.querySelectorAll('.filter-btn').forEach(btn => {
-    btn.addEventListener('click', () => applyFilter(btn.dataset.state));
+  // Clear existing cards and reset SnoCountry cache for fresh data on re-init
+  grid.innerHTML = '';
+  _snoCache = null;
+
+  // Render skeleton cards immediately (store default order)
+  RESORTS.forEach((resort, i) => {
+    const card = buildSkeletonCard(resort);
+    card.dataset.order = i;
+    grid.appendChild(card);
   });
+
+  // Disable sort during load
+  document.querySelectorAll('.sort-btn').forEach(b => { b.disabled = true; });
+
+  // Re-apply current filter so state pills still work during load
+  applyFilter(activeState);
+
+  // Wire up event listeners once
+  if (!_listenersWired) {
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => applyFilter(btn.dataset.state));
+    });
+    document.querySelectorAll('.sort-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (btn.disabled) return;
+        currentSortKey = btn.dataset.sort;
+        document.querySelectorAll('.sort-btn').forEach(b =>
+          b.classList.toggle('active', b === btn)
+        );
+        sortCards(currentSortKey);
+      });
+    });
+    _listenersWired = true;
+  }
 
   // Start SnoCountry loading in background — don't block card rendering
   const snoReady = loadSnoCountry();
@@ -622,6 +726,19 @@ async function init() {
   updatedEl.textContent = new Date().toLocaleTimeString([], {
     hour: '2-digit', minute: '2-digit'
   });
+
+  // Enable sort buttons and re-apply chosen sort
+  document.querySelectorAll('.sort-btn').forEach(b => {
+    b.disabled = false;
+    b.classList.toggle('active', b.dataset.sort === currentSortKey);
+  });
+  if (currentSortKey !== 'default') sortCards(currentSortKey);
+
+  // Re-apply current filter so powder-badge cards respect active state
+  applyFilter(activeState);
+
+  // Start 15-min auto-refresh countdown
+  startCountdown();
 }
 
 init();
